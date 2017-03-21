@@ -23,9 +23,9 @@ public class PerceptronClassifier implements Serializable {
 
     private double[] weights;
 
-    public double bias = 0.0;
-    public double threshold = 0.5;
-    public double learningRate = 0.1;
+    private double bias = 0.0;
+    private double threshold = 0.5;
+    private double learningRate = 0.1;
 
     public  PerceptronClassifier(){};
 
@@ -36,77 +36,46 @@ public class PerceptronClassifier implements Serializable {
     }
 
     public void update(Boolean label, double[] features) {
-        Boolean predictedLanel = this.classify(features);
+        Boolean prediction = this.classify(features);
 
-        if (!label.equals(predictedLanel)) {
-            Double error = Boolean.TRUE.equals(label) ? 1.0 : -1.0;
-
-            // Get correction
+        if (!label.equals(prediction)) {
+            double error =-1;
+            if (Boolean.TRUE.equals(label)){
+                error = 1.0;
+            }
             Double correction;
             for (int i = 0; i < features.length; i++) {
-                correction = features[i] * error * this.learningRate;
-                this.weights[i] = this.weights[i] + correction;
+                correction = features[i] * error * learningRate;
+                weights[i] = weights[i] + correction;
             }
         }
     }
 
-
     public Boolean classify(double[] features) {
         if (this.weights == null) {
-            this.initWeights(features.length);
+            initWeights(features.length);
         }
-
-        Double evaluation = MathUtil.dot(features, weights) + this.bias;
-
-        Boolean prediction = evaluation > this.threshold ? Boolean.TRUE : Boolean.FALSE;
+        Double evaluation = dotMultiplication(features, weights) + this.bias;
+        Boolean prediction = Boolean.FALSE;
+        if(evaluation > threshold){
+            prediction = Boolean.TRUE;
+        }
         return prediction;
     }
 
-    protected void initWeights(int size) {
-        this.weights = new double[size];
+    private void initWeights(int size) {
+        weights = new double[size];
     }
 
-
-    public void reset() {
-        this.weights = null;
+    private double dotMultiplication(double[] vector1, double[] vector2) {
+        if (vector1.length != vector2.length) {
+            throw new IllegalArgumentException("The dimensions have to be equal");
+        }
+        double sum = 0;
+        for (int i = 0; i < vector1.length; i++) {
+            sum += vector1[i] * vector2[i];
+        }
+        return sum;
     }
-
-    public double[] getWeights() {
-        return weights;
-    }
-
-    public void setWeights(double[] weights) {
-        this.weights = weights;
-    }
-
-    public double getBias() {
-        return bias;
-    }
-
-    public void setBias(double bias) {
-        this.bias = bias;
-    }
-
-    public double getThreshold() {
-        return threshold;
-    }
-
-    public void setThreshold(double threshold) {
-        this.threshold = threshold;
-    }
-
-    public double getLearningRate() {
-        return learningRate;
-    }
-
-    public void setLearningRate(double learningRate) {
-        this.learningRate = learningRate;
-    }
-
-    @Override
-    public String toString() {
-        return "PerceptronClassifier [bias=" + bias + ", threshold=" + threshold + ", learningRate=" + learningRate + "]";
-    }
-
 
 }

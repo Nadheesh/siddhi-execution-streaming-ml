@@ -16,4 +16,4 @@
 # under the License.
 #
 
-pml=org.wso2.extension.siddhi.execution.streamingml.PerceptronStreamProcessor
+pml=org.wso2.extension.siddhi.execution.streamingml.StreamingMLStreamProcessor
