@@ -33,25 +33,35 @@ import org.wso2.siddhi.query.api.definition.AbstractDefinition;
 import org.wso2.siddhi.query.api.definition.Attribute;
 import org.wso2.siddhi.query.api.exception.ExecutionPlanValidationException;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Implement hte Streaming ML Stream processor Siddhi extension
+ */
 public class StreamingMLStreamProcessor extends StreamProcessor{
 
     private String modelType;
-    private PerceptronClassifier model;
+    private PerceptronClassifier model; //model to train (currently only Perceptrons)
     private Map<Integer, int[]> attributeIndexMap;
     private boolean training;
 
+    /**
+     * Processed values in the each event
+     * @param complexEventChunk
+     * @param processor
+     * @param streamEventCloner
+     * @param complexEventPopulater
+     */
     @Override protected void process(ComplexEventChunk<StreamEvent> complexEventChunk, Processor processor,
             StreamEventCloner streamEventCloner, ComplexEventPopulater complexEventPopulater) {
         while (complexEventChunk.hasNext()){
             StreamEvent event = complexEventChunk.next();
             String[] featureValues = new String[attributeIndexMap.size()];
 
+            //extract values from features
             for (Map.Entry<Integer, int[]> entry : attributeIndexMap.entrySet()) {
                 int featureIndex = entry.getKey();
                 int[] attributeIndexArray = entry.getValue();
@@ -68,6 +78,7 @@ public class StreamingMLStreamProcessor extends StreamProcessor{
             }
 
             if(featureValues!=null) {
+                //set the training label
                 Boolean label;
                 if ("true".equals(featureValues[0].toLowerCase())){
                     label = Boolean.TRUE;
@@ -80,6 +91,7 @@ public class StreamingMLStreamProcessor extends StreamProcessor{
 
                 double[] features = new double[featureValues.length - 1];
 
+                //parsing the values from the features to double
                 try {
                     for (int i = 1; i < featureValues.length; i++) {
                         features[i - 1] = Double.parseDouble(featureValues[i]);
@@ -88,6 +100,8 @@ public class StreamingMLStreamProcessor extends StreamProcessor{
                     throw new ExecutionPlanRuntimeException(
                             "Feature values should be numeric");
                 }
+
+                //update the model
                 if (features.length>0) {
 
                     Boolean prediction = model.classify(features);
@@ -105,6 +119,13 @@ public class StreamingMLStreamProcessor extends StreamProcessor{
         nextProcessor.process(complexEventChunk);
     }
 
+    /**
+     * Initiating the query
+     * @param abstractDefinition
+     * @param expressionExecutors
+     * @param executionPlanContext
+     * @return
+     */
     @Override protected List<Attribute> init(AbstractDefinition abstractDefinition,
             ExpressionExecutor[] expressionExecutors, ExecutionPlanContext executionPlanContext) {
 
@@ -137,6 +158,7 @@ public class StreamingMLStreamProcessor extends StreamProcessor{
         }
     }
 
+    //create Feature and attribute map
     @Override public void start() {
         if (training){
             setFeatureAttributeMapping();

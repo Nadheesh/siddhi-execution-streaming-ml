@@ -19,10 +19,15 @@ package org.wso2.extension.siddhi.execution.streamingml;
 
 import java.io.Serializable;
 
+/**
+ * Implementation of the Perceptron Classifier algorithm
+ */
 public class PerceptronClassifier implements Serializable {
 
+    //weights list
     private double[] weights;
 
+    //parameters for learning
     private double bias = 0.0;
     private double threshold = 0.5;
     private double learningRate = 0.1;
@@ -35,6 +40,12 @@ public class PerceptronClassifier implements Serializable {
         this.learningRate = learningRate;
     }
 
+    /**
+     * Perform the learning of the Perceptron when single data point
+     *
+     * @param label - label used to train
+     * @param features - feature set containing data to train
+     */
     public void update(Boolean label, double[] features) {
         Boolean prediction = this.classify(features);
 
@@ -43,14 +54,19 @@ public class PerceptronClassifier implements Serializable {
             if (Boolean.TRUE.equals(label)){
                 error = 1.0;
             }
-            Double correction;
+
             for (int i = 0; i < features.length; i++) {
-                correction = features[i] * error * learningRate;
-                weights[i] = weights[i] + correction;
+                weights[i] = weights[i] + (features[i] * error * learningRate);
             }
         }
     }
 
+    /**
+     * Perform the classification using the Perceptron model
+     *
+     * @param features - data to perform the classification/prediction
+     * @return
+     */
     public Boolean classify(double[] features) {
         if (this.weights == null) {
             initWeights(features.length);
@@ -63,10 +79,20 @@ public class PerceptronClassifier implements Serializable {
         return prediction;
     }
 
+    /**
+     * Initialize the weight vector
+     * @param size - size of the weight vector
+     */
     private void initWeights(int size) {
         weights = new double[size];
     }
 
+    /**
+     * Performs vector dot multiplication
+     * @param vector1 - first vector to multiply
+     * @param vector2 - This is multiplied with the
+     * @return
+     */
     private double dotMultiplication(double[] vector1, double[] vector2) {
         if (vector1.length != vector2.length) {
             throw new IllegalArgumentException("The dimensions have to be equal");
